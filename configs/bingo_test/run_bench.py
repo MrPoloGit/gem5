@@ -116,6 +116,17 @@ bop_group.add_argument('--bop-round-max', type=int, default=100,
 bop_group.add_argument('--bop-bad-score', type=int, default=10,
                        help='Score at which HWP is disabled (default: 10)')
 
+# --- Specific: Stride Prefetcher ---
+stride_group = parser.add_argument_group('Stride Prefetcher Options')
+stride_group.add_argument('--stride-distance', type=int, default=0,
+                        help='How far ahead of the demand stream to start prefetching (default: 0)')
+stride_group.add_argument('--stride-confidence', type=int, default=50,
+                        help='Prefetch generation confidence threshold percentage (default: 50)')
+stride_group.add_argument('--stride-table-entries', type=str, default="64",
+                        help='Number of entries of the PC table (default: 64)')
+stride_group.add_argument('--stride-table-assoc', type=int, default=4,
+                        help='Associativity of the PC table (default: 4)')
+
 args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
@@ -193,6 +204,13 @@ elif args.prefetcher == 'bop':
 
 elif args.prefetcher == 'stride':
     prefetcher = StridePrefetcher()
+    # Apply specific Stride args
+    prefetcher.distance = args.stride_distance
+    prefetcher.confidence_threshold = args.stride_confidence
+    prefetcher.table_entries = args.stride_table_entries
+    prefetcher.table_assoc = args.stride_table_assoc
+    
+    # Apply degree
     if args.degree > 0:
         prefetcher.degree = args.degree
 
@@ -245,6 +263,8 @@ system.workload = SEWorkload.init_compatible(args.cmd)
 # Set up the process
 process = Process()
 process.cmd = [args.cmd]
+# Force OMP_NUM_THREADS=1 for SE mode compatibility if running OMP binaries
+process.env = ['OMP_NUM_THREADS=1'] 
 
 if args.options:
     process.cmd.extend(args.options.split())
