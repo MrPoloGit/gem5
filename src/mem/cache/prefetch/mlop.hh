@@ -1,87 +1,74 @@
-// Copyright (...)
 #ifndef __MEM_CACHE_PREFETCH_MLOP_HH__
 #define __MEM_CACHE_PREFETCH_MLOP_HH__
 
+#include <cstdint>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "mem/cache/prefetch/queued.hh"
-#include "params/MLOPPrefetcher.hh"
 
 namespace gem5
 {
+
+struct MLOPPrefetcherParams;
 
 namespace prefetch
 {
 
 /**
  * Multi-Lookahead Offset Prefetcher (MLOP)
- * Based on the DPC3 design:
- *   - Tracks deltas between consecutive misses (per PC)
- *   - Scores offsets × lookahead levels
- *   - Selects highest-scoring offsets
- *   - Issues prefetches through Queued prefetcher engine
+ *
+ * Implementation style matches classic gem5 prefetchers (e.g., BOP):
+ *  - No direct probe registration from the prefetcher
+ *  - Learning happens using the accesses that reach calculatePrefetch()
+ *
+ * Configure from Python to approximate "demand-miss-only learning":
+ *  - on_miss = True
+ *  - prefetch_on_access = False (or True if you want every access)
+ *
+ * This implementation:
+ *  - Tracks per-PC block address history
+ *  - Scores offset × lookahead pairs every evalPeriod updates
+ *  - Selects best offset per lookahead
+ *  - Issues prefetches at (offset * lookahead) blocks ahead/behind
  */
 class MLOP : public Queued
 {
   public:
-    /** Constructor: parameters come from MLOPPrefetcher.py */
     MLOP(const MLOPPrefetcherParams &p);
+    ~MLOP() = default;
 
-    /** Called on each memory access notification */
-    void notify(const PrefetchInfo &pfi) override;
-
-    /** Called to generate prefetches for a given access */
     void calculatePrefetch(const PrefetchInfo &pfi,
                            std::vector<AddrPriority> &addresses,
                            const CacheAccessor &cache) override;
 
   private:
-    /* ------------------------------------------------------------
-     * Types + Tables
-     * ------------------------------------------------------------ */
-
-    /** Per-offset entry storing scores per lookahead level */
     struct OffsetEntry
     {
-        int offset;                       // signed offset in cache lines
-        std::vector<uint32_t> scores;     // one score per lookahead level
+        int offset;                   // signed offset in blocks
+        std::vector<uint32_t> scores; // scores[L-1]
     };
 
-    /* ------------------------------------------------------------
-     * Prefetcher Parameters (from Python SimObject)
-     * ------------------------------------------------------------ */
-    const unsigned evalPeriod;         // demand misses between evaluations
-    const unsigned lookaheadLevels;    // number of lookahead depths
-    const int      maxOffset;          // maximum absolute offset tested
-    const unsigned scoreThreshold;     // minimal score to consider offset
-    const unsigned lineSize;           // bytes per cache line
+    // Parameters
+    const unsigned evalPeriod;
+    const unsigned lookaheadLevels;
+    const int maxOffset;
+    const unsigned scoreThreshold;
 
-    /* ------------------------------------------------------------
-     * MLOP Internal State
-     * ------------------------------------------------------------ */
-
-    /** Miss history per PC (PC → vector of block numbers) */
+    // State
+    // PC -> blocks
     std::unordered_map<Addr, std::vector<Addr>> pcMissHistory;
-
-    /** Offset table: offset → entry */
+    // offset -> entry
     std::unordered_map<int, OffsetEntry> offsetTable;
-
-    /** Best offsets selected for this scoring round */
     std::vector<std::pair<unsigned, const OffsetEntry*>> bestOffsets;
-
-    /** Counter for periodic scoring */
     unsigned missCounter;
 
-    /* ------------------------------------------------------------
-     * Core MLOP Scoring Logic
-     * ------------------------------------------------------------ */
-
-    /** Score offsets × lookahead levels based on recorded deltas */
+    // Helpers
+    void resetScores();
     void scoreOffsets();
-
-    /** Select highest-scoring offsets for use in calculatePrefetch() */
     void selectBestOffsets();
+    void trimHistories();
 };
 
 } // namespace prefetch

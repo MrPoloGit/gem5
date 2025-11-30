@@ -725,8 +725,9 @@ class BingoPrefetcher(QueuedPrefetcher):
     cache_snoop = True
 
     # Only demand accesses should trigger Bingo logic
-    prefetch_on_access = True
+    on_miss = True
     on_inst = False
+    prefetch_on_access = False
 
 
 # ADDED STUFF

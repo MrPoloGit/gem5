@@ -1,134 +1,121 @@
-// Copyright (...)
 #ifndef __MEM_CACHE_PREFETCH_BINGO_HH__
 #define __MEM_CACHE_PREFETCH_BINGO_HH__
 
-#include <deque>
+#include <cstddef>
+#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
 #include "mem/cache/prefetch/queued.hh"
-#include "params/BingoPrefetcher.hh"
 
 namespace gem5
 {
+
+struct BingoPrefetcherParams;
 
 namespace prefetch
 {
 
 /**
- * Bingo Spatial Data Prefetcher (HPCA 2019).
- * Uses event histories and pattern table matching to predict future offsets.
+ * Bingo Spatial Data Prefetcher (HPCA 2019) — simplified integration.
+ *
+ * This version matches classic gem5 prefetcher style (e.g., BOP):
+ *  - No direct cache probe registration from the prefetcher
+ *  - Training happens based on the access stream visible in
+ *    calculatePrefetch()
+ *
+ * Use Python knobs to control what reaches calculatePrefetch():
+ *  - on_miss = True     (recommended)
+ *  - on_inst = False    (recommended)
  */
 class Bingo : public Queued
 {
   public:
-    /** Bingo constructor (parameters come from BingoPrefetcher.py) */
     Bingo(const BingoPrefetcherParams &p);
+    ~Bingo() = default;
 
-    /** Called on each demand access */
     void calculatePrefetch(const PrefetchInfo &pfi,
                            std::vector<AddrPriority> &addresses,
                            const CacheAccessor &cache) override;
 
-    /** Called when a cache line is evicted */
-    void notifyEvict(const EvictionInfo &info) override;
-
   private:
     /* ------------------------------------------------------------
-     * Types + Data Structures
+     * Types
      * ------------------------------------------------------------ */
-
-    /** Compact event bucket ID */
     using Event = uint8_t;
-
-    /** Fixed-length sequence of events */
     using EventSeq = std::vector<Event>;
 
-    /** Key for Pattern Table: hashed event sequence */
     struct PatternKey
     {
         EventSeq seq;
 
-        bool operator==(const PatternKey &other) const {
-            return seq == other.seq;
-        }
+        bool operator==(const PatternKey &o) const { return seq == o.seq; }
     };
 
-    /** Hash function for PatternKey */
     struct PatternKeyHash
     {
-        std::size_t operator()(const PatternKey &k) const {
+        std::size_t operator()(const PatternKey &k) const
+        {
             std::size_t h = 0;
-            for (auto e : k.seq)
-                h = (h * 1315423911u) ^ (e + 0x9e3779b97f4a7c15ULL);
+            for (auto e : k.seq) {
+                h = (h * 1315423911u) ^ (std::size_t(e)
+                    + 0x9e3779b97f4a7c15ULL);
+            }
             return h;
         }
     };
 
-    /** Pattern Table Entry */
     struct PatternEntry
     {
-        int nextOffset;     // offset predicted by this pattern
-        int confidence;     // incremented on correct predictions
-        int usefulness;     // optional for replacement policy
+        int nextOffset = 0;
+        int confidence = 0;
+        int usefulness = 0;
     };
 
-    /** Event Table Entry */
     struct EventHistory
     {
-        Addr lastRegion;           // region tag (aligned)
-        int lastOffset;            // last observed normalized offset
-        EventSeq history;          // rolling event-history
+        Addr lastRegion = 0;
+        int lastOffset = 0;
+        EventSeq history;
+
+        // Simple training signal: last observed offset inside current region
+        int lastSeenOffset = 0;
+        bool initialized = false;
     };
 
     /* ------------------------------------------------------------
-     * Prefetcher Parameters
+     * Parameters
      * ------------------------------------------------------------ */
-    const unsigned regionSize;       // bytes per region
-    const unsigned lineSize;         // block size
-    const unsigned historyLength;    // event sequence length
-    const unsigned numBuckets;       // bucket count
-    const unsigned maxPatterns;      // pattern table capacity
-    const unsigned degree;           // prefetch degree
+    const unsigned regionSize;
+    const unsigned lineSize;
+    const unsigned historyLength;
+    const unsigned numBuckets;
+    const unsigned maxPatterns;
+    const unsigned degree;
 
     /* ------------------------------------------------------------
-     * Bingo Tables
+     * Tables
      * ------------------------------------------------------------ */
-
-    /** PC-indexed event history table */
-    std::unordered_map<Addr, EventHistory> eventTable;
-
-    /** Pattern Table */
+    std::unordered_map<Addr, EventHistory> eventTable; // PC -> rolling events
     std::unordered_map<PatternKey, PatternEntry, PatternKeyHash> patternTable;
 
     /* ------------------------------------------------------------
-     * Helper Functions
+     * Helpers
      * ------------------------------------------------------------ */
+    Addr getRegion(Addr a) const { return a & ~(Addr(regionSize - 1)); }
 
-    /** Compute region base */
-    Addr getRegion(Addr a) const {
-        return a & ~(regionSize - 1);
+    int getOffset(Addr a) const
+    {
+        return int((a & (Addr(regionSize - 1))) / lineSize);
     }
 
-    /** Convert address to region-local offset */
-    int getOffset(Addr a) const {
-        return (a & (regionSize - 1)) / lineSize;
-    }
-
-    /** Bucketization of offset difference → event */
     Event computeEventBucket(int delta) const;
 
-    /** Insert a pattern into Pattern Table */
-    void addPattern(const EventSeq &seq, int nextOff);
-
-    /** Match event sequence in Pattern Table */
-    PatternEntry* matchPattern(const EventSeq &seq);
-
-    /** Update event table for a PC */
     void updateEventTable(Addr pc, Addr region, int offset);
 
-    /** Train pattern on region eviction */
     void trainPattern(const EventHistory &eh, int nextOffset);
+
+    PatternEntry *matchPattern(const EventSeq &seq);
 };
 
 } // namespace prefetch
