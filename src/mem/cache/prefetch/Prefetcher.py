@@ -685,6 +685,52 @@ class STeMSPrefetcher(QueuedPrefetcher):
 
 
 # ADDED STUFF
+class BingoPrefetcher(QueuedPrefetcher):
+    type = "BingoPrefetcher"
+    cxx_class = "gem5::prefetch::Bingo"
+    cxx_header = "mem/cache/prefetch/bingo.hh"
+
+    #
+    # Bingo Prefetcher Parameters (from the paper)
+    #
+
+    # Spatial region size (default 4KB)
+    region_size = Param.Unsigned(4096, "Spatial region size in bytes")
+
+    # Event sequence length (N in the paper, typically 8–12)
+    event_history_len = Param.Unsigned(
+        8, "Length of the event history sequence"
+    )
+
+    # Number of event buckets (paper uses 16 buckets)
+    bucket_count = Param.Unsigned(
+        16, "Number of event buckets for spatial deltas"
+    )
+
+    # Pattern table capacity (associative table)
+    pattern_table_entries = Param.Unsigned(
+        512, "Maximum number of pattern table entries"
+    )
+
+    # Prefetch degree (how many blocks ahead you fetch)
+    prefetch_degree = Param.Unsigned(
+        2, "Number of prefetches to generate per pattern match"
+    )
+
+    #
+    # Recommended Queue Behavior (standard for spatial prefetchers)
+    #
+    queue_squash = True
+    queue_filter = True
+    cache_snoop = True
+
+    # Only demand accesses should trigger Bingo logic
+    on_miss = True
+    on_inst = False
+    prefetch_on_access = False
+
+
+# ADDED STUFF
 class MLOPPrefetcher(QueuedPrefetcher):
     type = "MLOPPrefetcher"
     cxx_class = "gem5::prefetch::MLOP"
