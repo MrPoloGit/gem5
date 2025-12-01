@@ -7,39 +7,49 @@ M5OUT_DIR = "m5out"  # The root folder containing the prefetcher folders
 OUTPUT_DIR = "stat_graphs" # Where to save the resulting images
 
 # Map specific gem5 stat keys to readable names
-# format: ('Readable Name', 'primary_stat_key', 'secondary_stat_key_for_division')
+# format: 
+# 'name': Readable title for the graph
+# 'file_key': Exact string to match in stats.txt
+# 'is_ratio': If True, uses numerator/denominator fields instead of file_key
+# 'prefetch_related': If True, "none" prefetcher will be excluded from the plot
 METRICS = [
     {
         "name": "IPC",
         "file_key": "system.cpu.ipc",
-        "is_ratio": False
+        "is_ratio": False,
+        "prefetch_related": False
     },
     {
         "name": "Prefetch Accuracy",
         "file_key": "system.l2cache.prefetcher.accuracy",
-        "is_ratio": False
+        "is_ratio": False,
+        "prefetch_related": True
     },
     {
         "name": "Prefetch Coverage",
         "file_key": "system.l2cache.prefetcher.coverage",
-        "is_ratio": False
+        "is_ratio": False,
+        "prefetch_related": True
     },
     {
         "name": "Late Prefetches Ratio",
         "numerator": "system.l2cache.prefetcher.pfLate",
         "denominator": "system.l2cache.prefetcher.pfIssued",
-        "is_ratio": True
+        "is_ratio": True,
+        "prefetch_related": True
     },
     {
         "name": "Unused Prefetches Ratio",
         "numerator": "system.l2cache.prefetcher.pfUnused",
         "denominator": "system.l2cache.prefetcher.pfIssued",
-        "is_ratio": True
+        "is_ratio": True,
+        "prefetch_related": True
     },
     {
         "name": "Total DRAM Read Accesses",
-        "file_key": "system.mem_ctrl.dram.numReads",
-        "is_ratio": False
+        "file_key": "system.mem_ctrl.dram.numReads::total",
+        "is_ratio": False,
+        "prefetch_related": False
     }
 ]
 
@@ -115,36 +125,53 @@ def collect_data():
 
     return data
 
+def calculate_geomean(values):
+    """
+    Calculates geometric mean of a list of values.
+    Returns 0.0 if any value is <= 0 (standard definition strictness for this context).
+    """
+    a = np.array(values)
+    if len(a) == 0:
+        return 0.0
+    
+    # Handle zeros: if any value is 0, geometric mean is 0
+    if np.any(a <= 0):
+        return 0.0
+        
+    # Geometric mean = exp(mean(log(x)))
+    return np.exp(np.mean(np.log(a)))
+
 def add_average_group(data):
     """
-    Calculates the arithmetic mean for each metric across all workloads 
+    Calculates the GEOMETRIC MEAN for each metric across all workloads 
     and adds an 'Average' entry to the data dictionary.
     """
     if not data:
         return
 
     # Identify all prefetchers present in the data
-    # We scan all workloads to ensure we catch every prefetcher
     all_prefetchers = set()
     for w in data:
         all_prefetchers.update(data[w].keys())
     
-    num_workloads = len(data)
-    average_data = {p: {m['name']: 0.0 for m in METRICS} for p in all_prefetchers}
+    # Create structure for average data
+    average_data = {p: {} for p in all_prefetchers}
 
-    # Sum up values
+    # Collect lists of values to calculate gmean later
+    temp_values = {p: {m['name']: [] for m in METRICS} for p in all_prefetchers}
+
     for workload in data:
         for prefetcher in all_prefetchers:
-            # If a specific prefetcher missed a workload, it defaults to 0 here
             p_data = data[workload].get(prefetcher, {})
             for metric in METRICS:
                 m_name = metric['name']
-                average_data[prefetcher][m_name] += p_data.get(m_name, 0.0)
+                val = p_data.get(m_name, 0.0)
+                temp_values[prefetcher][m_name].append(val)
 
-    # Divide by count to get average
-    for prefetcher in average_data:
-        for m_name in average_data[prefetcher]:
-            average_data[prefetcher][m_name] /= num_workloads
+    # Calculate Geometric Mean
+    for prefetcher in temp_values:
+        for m_name, values in temp_values[prefetcher].items():
+            average_data[prefetcher][m_name] = calculate_geomean(values)
 
     # Add to main data structure
     data['Average'] = average_data
@@ -157,60 +184,65 @@ def plot_data(data):
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-    # Get sorted lists for consistent plotting
-    # We separate 'Average' to ensure it is appended at the very end
+    # Sort workloads and append Average at the end
     workload_keys = [k for k in data.keys() if k != 'Average']
     workloads = sorted(workload_keys)
-    
-    # If 'Average' exists in data, add it to the end of the list
     if 'Average' in data:
         workloads.append('Average')
     
-    # Find all unique prefetchers encountered
-    all_prefetchers = set()
+    # Identify all available prefetchers
+    all_prefetchers_in_data = set()
     for w in data:
-        all_prefetchers.update(data[w].keys())
-    prefetchers = sorted(list(all_prefetchers))
-
-    # X-axis setup
-    x = np.arange(len(workloads))
-    width = 0.8 / len(prefetchers)  # Calculate bar width based on number of prefetchers
+        all_prefetchers_in_data.update(data[w].keys())
+    sorted_all_prefetchers = sorted(list(all_prefetchers_in_data))
 
     # Generate one graph per metric
     for metric in METRICS:
         metric_name = metric["name"]
         
-        fig, ax = plt.subplots(figsize=(14, 6)) # Slightly wider to accommodate Average
+        # Determine which prefetchers to show for this specific graph
+        prefetchers_to_plot = []
+        for p in sorted_all_prefetchers:
+            # If graph is prefetch_related, skip "none" (case insensitive)
+            if metric["prefetch_related"] and p.lower() == "none":
+                continue
+            prefetchers_to_plot.append(p)
+            
+        if not prefetchers_to_plot:
+            print(f"Skipping plot for {metric_name}: No relevant prefetchers found.")
+            continue
+
+        # Setup plot
+        x = np.arange(len(workloads))
+        width = 0.8 / len(prefetchers_to_plot)
+        fig, ax = plt.subplots(figsize=(14, 6))
         
-        # Create bars for each prefetcher
-        for i, prefetcher in enumerate(prefetchers):
+        # Create bars
+        for i, prefetcher in enumerate(prefetchers_to_plot):
             y_values = []
             for workload in workloads:
-                # Get value, default to 0 if missing for specific combo
                 val = data.get(workload, {}).get(prefetcher, {}).get(metric_name, 0.0)
                 y_values.append(val)
             
-            # Calculate offset for grouped bars
+            # Grouping offset
             offset = width * i
-            # Center the group around the tick
-            centering = (width * len(prefetchers)) / 2
+            centering = (width * len(prefetchers_to_plot)) / 2
             
-            # Plot the bars
             ax.bar(x + offset - centering + (width/2), y_values, width, label=prefetcher)
 
         # Formatting
         ax.set_xlabel('Workloads')
         ax.set_ylabel(metric_name)
-        ax.set_title(f'{metric_name} by Workload (with Average)')
+        ax.set_title(f'{metric_name} by Workload (with Geometric Mean)')
         ax.set_xticks(x)
         ax.set_xticklabels(workloads)
         
-        # Move legend outside the plot area
+        # Legend
         ax.legend(title="Prefetchers", bbox_to_anchor=(1.01, 1), loc='upper left')
         
         plt.tight_layout()
         
-        # Save file
+        # Save
         filename = f"{metric_name.replace(' ', '_').lower()}.png"
         save_path = os.path.join(OUTPUT_DIR, filename)
         plt.savefig(save_path, dpi=300)
@@ -222,7 +254,7 @@ if __name__ == "__main__":
     processed_data = collect_data()
     
     if processed_data:
-        print(f"Found {len(processed_data)} workloads. Calculating averages...")
+        print(f"Found {len(processed_data)} workloads. Calculating geometric means...")
         add_average_group(processed_data)
         plot_data(processed_data)
         print("Done!")
