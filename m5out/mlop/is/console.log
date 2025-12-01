@@ -6,14 +6,14 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7000
+system.remote_gdb: Listening for connections on port 7011
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
 gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 17:50:12
-gem5 executing on mohound-MS-7C56, pid 143313
+gem5 started Nov 30 2025 20:59:22
+gem5 executing on mohound-MS-7C56, pid 237509
 command line: ./build/ALL/gem5.opt --outdir=m5out/mlop/is configs/bingo_test/run_bench.py --prefetcher mlop NPB3.3.1/NPB3.3-SER/bin/is.S.x
 
 --- Info: Instantiating system ---
@@ -32,3 +32,32 @@ src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
 
  Size:  65536  (class S)
  Iterations:   10
+
+
+ IS Benchmark Completed
+ Class           =                        S
+ Size            =                    65536
+ Iterations      =                       10
+ Time in seconds =                     0.06
+ Mop/s total     =                    11.22
+ Operation type  =              keys ranked
+ Verification    =               SUCCESSFUL
+ Version         =                    3.3.1
+ Compile date    =              30 Nov 2025
+
+ Compile options:
+    CC           = cc
+    CLINK        = $(CC)
+    C_LIB        = (none)
+    C_INC        = (none)
+    CFLAGS       = -O
+    CLINKFLAGS   = -O
+
+
+ Please send all errors/feedbacks to:
+
+ NPB Development Team
+ npb@nas.nasa.gov
+
+
+Exiting @ tick 118591027000 because exiting with last active thread context

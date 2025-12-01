@@ -7,6 +7,12 @@ gem5_exec = "./build/ALL/gem5.opt"
 script_path = "configs/bingo_test/run_bench.py"
 binary_base_path = "NPB3.3.1/NPB3.3-SER/bin"
 
+# Bingo Specific Configuration
+BINGO_REGION_SIZE = "4096"
+BINGO_ACC_ENTRIES = "64"
+BINGO_HIST_ENTRIES = "12288"
+BINGO_HIST_ASSOC = "16"
+
 # Limits
 MAX_CONCURRENT = 4  # <--- Change this to your desired max value
 
@@ -58,13 +64,25 @@ def run_pool():
             binary = f"{binary_base_path}/{next_wl}.S.x"
             outdir = f"m5out/{next_pref}/{next_wl}"
             
+            # Build the base command
             cmd = [
                 gem5_exec,
                 f"--outdir={outdir}",
                 script_path,
                 "--prefetcher", next_pref,
-                binary
             ]
+            
+            # Add specific flags if the prefetcher is Bingo
+            if next_pref == "bingo":
+                cmd.extend([
+                    "--bingo-region-size", BINGO_REGION_SIZE,
+                    "--bingo-acc-entries", BINGO_ACC_ENTRIES,
+                    "--bingo-hist-entries", BINGO_HIST_ENTRIES,
+                    "--bingo-hist-assoc", BINGO_HIST_ASSOC
+                ])
+
+            # Append binary at the end
+            cmd.append(binary)
             
             os.makedirs(outdir, exist_ok=True)
             

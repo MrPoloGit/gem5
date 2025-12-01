@@ -6,14 +6,14 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7008
+system.remote_gdb: Listening for connections on port 7004
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
 gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 17:49:14
-gem5 executing on mohound-MS-7C56, pid 142736
+gem5 started Nov 30 2025 20:59:21
+gem5 executing on mohound-MS-7C56, pid 237492
 command line: ./build/ALL/gem5.opt --outdir=m5out/stride/dc configs/bingo_test/run_bench.py --prefetcher stride NPB3.3.1/NPB3.3-SER/bin/dc.S.x
 
 --- Info: Instantiating system ---
@@ -48,3 +48,45 @@ Prime 	Generator 	Seed
  701	 641		 351
  883	 108		 442
 Binary ADC file ADC.dat.0 have been generated.
+View sizes are written into ADC.view.sz.0
+Estimated rb-tree size = 75000 
+ DC.ComputeGivenGroupbys failed, errno = 0
+
+*** DC Benchmark Results:
+ Benchmark Time   =                0.081
+ Input Tuples     =                 1000
+ Number of Views  =                    0
+ Number of Tasks  =                    1
+ Tuples Generated =                    0
+ Tuples/s         =                 0.00
+ Checksum         =   0.000000000000e+00
+ Verification failed
+
+
+ DC Benchmark Completed
+ Class           =                        S
+ Size            =                     1000
+ Iterations      =                        1
+ Time in seconds =                     0.08
+ Mop/s total     =                     0.00
+ Operation type  =         Tuples generated
+ Verification    =             UNSUCCESSFUL
+ Version         =                    3.3.1
+ Compile date    =              30 Nov 2025
+
+ Compile options:
+    CC           = cc
+    CLINK        = $(CC)
+    C_LIB        = (none)
+    C_INC        = (none)
+    CFLAGS       = -O
+    CLINKFLAGS   = -O
+
+
+ Please send all errors/feedbacks to:
+
+ NPB Development Team
+ npb@nas.nasa.gov
+
+
+Exiting @ tick 744830725000 because exiting with last active thread context

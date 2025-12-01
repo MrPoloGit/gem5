@@ -6,14 +6,14 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7000
+system.remote_gdb: Listening for connections on port 7003
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
 gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 17:49:14
-gem5 executing on mohound-MS-7C56, pid 142738
+gem5 started Nov 30 2025 20:59:21
+gem5 executing on mohound-MS-7C56, pid 237494
 command line: ./build/ALL/gem5.opt --outdir=m5out/stride/is configs/bingo_test/run_bench.py --prefetcher stride NPB3.3.1/NPB3.3-SER/bin/is.S.x
 
 --- Info: Instantiating system ---

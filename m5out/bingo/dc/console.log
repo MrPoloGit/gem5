@@ -11,10 +11,10 @@ gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
-gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 17:35:10
-gem5 executing on mohound-MS-7C56, pid 135826
-command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/dc configs/bingo_test/run_bench.py --prefetcher bingo NPB3.3.1/NPB3.3-SER/bin/dc.S.x
+gem5 compiled Nov 30 2025 21:55:51
+gem5 started Nov 30 2025 22:00:56
+gem5 executing on mohound-MS-7C56, pid 294547
+command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/dc configs/bingo_test/run_bench.py --prefetcher bingo --bingo-region-size 4096 --bingo-acc-entries 64 --bingo-hist-entries 12288 --bingo-hist-assoc 16 NPB3.3.1/NPB3.3-SER/bin/dc.S.x
 
 --- Info: Instantiating system ---
     Binary: NPB3.3.1/NPB3.3-SER/bin/dc.S.x
@@ -52,12 +52,12 @@ View sizes are written into ADC.view.sz.0
 Estimated rb-tree size = 75000 
 
 *** DC Benchmark Results:
- Benchmark Time   =                0.107
+ Benchmark Time   =                0.108
  Input Tuples     =                 1000
  Number of Views  =                   31
  Number of Tasks  =                    1
  Tuples Generated =                29232
- Tuples/s         =            271945.82
+ Tuples/s         =            271910.41
  Checksum         =   4.646202130000e+08
 
 
@@ -87,4 +87,4 @@ Estimated rb-tree size = 75000
  npb@nas.nasa.gov
 
 
-Exiting @ tick 786926956000 because exiting with last active thread context
+Exiting @ tick 730964537000 because exiting with last active thread context

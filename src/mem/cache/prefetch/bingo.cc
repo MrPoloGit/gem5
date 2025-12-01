@@ -1,6 +1,34 @@
+/*
+ * Copyright (c) 2024 Samsung Electronics
+ * Copyright (c) 2019 Sharif University of Technology
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met: redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer;
+ * redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution;
+ * neither the name of the copyright holders nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include "mem/cache/prefetch/bingo.hh"
 
-#include "base/logging.hh"
 #include "debug/HWPrefetch.hh"
 #include "params/BingoPrefetcher.hh"
 
@@ -13,91 +41,50 @@ namespace prefetch
 Bingo::Bingo(const BingoPrefetcherParams &p)
     : Queued(p),
       regionSize(p.region_size),
-      lineSize(p.block_size),
-      historyLength(p.event_history_len),
-      numBuckets(p.bucket_count),
-      maxPatterns(p.pattern_table_entries),
-      degree(p.prefetch_degree)
+      regionSizeLog2(floorLog2(p.region_size)),
+      accumulationTableEntries(p.accumulation_table_entries),
+      historyTableSize(p.history_table_entries),
+      historyTableAssoc(p.history_table_assoc)
 {
-    if (!isPowerOf2(regionSize)) {
-        fatal("%s: region_size must be power of 2\n", name());
-    }
-    if (!isPowerOf2(lineSize)) {
-        fatal("%s: block_size must be power of 2\n", name());
-    }
-    if (lineSize > regionSize) {
-        fatal("%s: block_size must be <= region_size\n", name());
-    }
-    if (historyLength == 0) {
-        fatal("%s: event_history_len must be > 0\n", name());
-    }
-    if (degree == 0) {
-        fatal("%s: prefetch_degree must be > 0\n", name());
-    }
+    // Calculate blocks per region based on system block size
+    blocksPerRegion = regionSize / blkSize;
 
-    patternTable.reserve(maxPatterns);
-
-    DPRINTF(HWPrefetch,
-            "%s: init regionSize=%u lineSize=%u historyLength=%u buckets=%u "
-            "maxPatterns=%u degree=%u\n",
-            name(), regionSize, lineSize, historyLength, numBuckets,
-            maxPatterns, degree);
+    // Initialize History Table (Sets x Ways)
+    // Number of sets = Total Entries / Associativity
+    int numSets = historyTableSize / historyTableAssoc;
+    historyTable.resize(numSets);
+    for (auto &set : historyTable) {
+        set.resize(historyTableAssoc);
+        for (auto &entry : set) {
+            entry.footprint.resize(blocksPerRegion, false);
+        }
+    }
 }
 
-Bingo::Event
-Bingo::computeEventBucket(int delta) const
+Addr
+Bingo::pageAddress(Addr addr) const
 {
-    // Placeholder bucketization (you can refine to match paper)
-    if (delta == 0)  return 0;
-    if (delta == 1)  return 1;
-    if (delta == -1) return 2;
-    if (delta > 1 && delta < 4)   return 3;
-    if (delta < -1 && delta > -4) return 4;
-    return 15;
+    return addr & ~(Addr)(regionSize - 1);
+}
+
+Addr
+Bingo::pageOffset(Addr addr) const
+{
+    return (addr & (regionSize - 1)) / blkSize;
+}
+
+uint32_t
+Bingo::hashShortEvent(Addr pc, Addr offset) const
+{
+    // Simple hash combining PC and Offset to index the table
+    // Shifting PC to align with typical instruction spacing
+    return ((pc >> 1) ^ offset) % historyTable.size();
 }
 
 void
-Bingo::updateEventTable(Addr pc, Addr region, int offset)
+Bingo::notifyEvict(const EvictionInfo &info)
 {
-    auto &eh = eventTable[pc];
-
-    if (!eh.initialized || eh.history.empty() || eh.lastRegion != region) {
-        eh.history.assign(historyLength, 0);
-        eh.lastRegion = region;
-        eh.lastOffset = offset;
-        eh.lastSeenOffset = offset;
-        eh.initialized = true;
-        return;
-    }
-
-    const int delta = offset - eh.lastOffset;
-    const Event e = computeEventBucket(delta);
-    eh.lastOffset = offset;
-    eh.lastSeenOffset = offset;
-
-    // shift left by one
-    eh.history.erase(eh.history.begin());
-    eh.history.push_back(e);
-}
-
-void
-Bingo::trainPattern(const EventHistory &eh, int nextOffset)
-{
-    if (maxPatterns != 0 && patternTable.size() >= maxPatterns) {
-        // Simple eviction policy: erase arbitrary entry (OK to start)
-        patternTable.erase(patternTable.begin());
-    }
-
-    PatternKey key{eh.history};
-    patternTable[key] = PatternEntry{nextOffset, 1, 0};
-}
-
-Bingo::PatternEntry *
-Bingo::matchPattern(const EventSeq &seq)
-{
-    PatternKey key{seq};
-    auto it = patternTable.find(key);
-    return (it == patternTable.end()) ? nullptr : &it->second;
+    // Maintenance typically handled in calculatePrefetch for this design.
 }
 
 void
@@ -105,45 +92,169 @@ Bingo::calculatePrefetch(const PrefetchInfo &pfi,
                          std::vector<AddrPriority> &addresses,
                          const CacheAccessor &cache)
 {
-    const Addr pc = pfi.getPC();
-    if (pc == 0)
+    if (!pfi.hasPC()) {
         return;
+    }
 
-    const Addr addr = pfi.getAddr();
-    const Addr region = getRegion(addr);
-    const int offset = getOffset(addr);
+    Addr pc = pfi.getPC();
+    Addr addr = blockAddress(pfi.getAddr());
+    Addr pageAddr = pageAddress(addr);
+    Addr offset = pageOffset(addr);
 
-    // Train on region transitions (a stand-in for true “evict/region-end”)
-    auto it = eventTable.find(pc);
-    if (it != eventTable.end()) {
-        auto &eh_prev = it->second;
-        if (eh_prev.initialized && eh_prev.lastRegion != region) {
-            // When we leave a region, store the last seen offset as
-            // "nextOffset"
-            trainPattern(eh_prev, eh_prev.lastSeenOffset);
+    // -------------------------------------------------------------------------
+    // 1. Accumulation / Training Phase
+    // -------------------------------------------------------------------------
+
+    auto it = accumulationTable.find(pageAddr);
+
+    if (it != accumulationTable.end()) {
+        // Page already active, update footprint
+        it->second.footprint[offset] = true;
+        it->second.lastAccess = curTick(); // FIXED: use curTick()
+    } else {
+        // New Page Access (Trigger Access)
+
+        // Check capacity of Accumulation Table
+        if (accumulationTable.size() >= accumulationTableEntries) {
+            // Evict LRU from Accumulation Table to History Table
+            Addr lruPage = 0;
+            Tick minTick = MaxTick;
+
+            for (auto &entry : accumulationTable) {
+                if (entry.second.lastAccess < minTick) {
+                    minTick = entry.second.lastAccess;
+                    lruPage = entry.first;
+                }
+            }
+
+            // Move LRU entry to History Table
+            ActiveRegionEntry &lruEntry = accumulationTable.at(lruPage);
+
+            // Index with Short Event (Trigger PC + Trigger Offset)
+            uint32_t setIdx = hashShortEvent(lruEntry.pc, lruEntry.offset);
+
+            // Find Victim in History Table (LRU)
+            int victimWay = -1;
+            Tick minHistTick = MaxTick;
+            int invalidWay = -1;
+
+            for (int w = 0; w < historyTableAssoc; ++w) {
+                if (!historyTable[setIdx][w].valid) {
+                    invalidWay = w;
+                    break;
+                }
+                if (historyTable[setIdx][w].lastUse < minHistTick) {
+                    minHistTick = historyTable[setIdx][w].lastUse;
+                    victimWay = w;
+                }
+            }
+
+            int way = (invalidWay != -1) ? invalidWay : victimWay;
+
+            // Store in History Table
+            // TAG with Long Event (Trigger PC + Trigger Address/Page)
+            historyTable[setIdx][way].valid = true;
+            historyTable[setIdx][way].pc = lruEntry.pc;
+            historyTable[setIdx][way].address = lruPage; // Storing Page Base
+            historyTable[setIdx][way].offset = lruEntry.offset;
+            historyTable[setIdx][way].footprint = lruEntry.footprint;
+            historyTable[setIdx][way].lastUse = curTick(); // FIXED: use curTick()
+
+            accumulationTable.erase(lruPage);
+        }
+
+        // Create new entry in Accumulation Table
+        ActiveRegionEntry newEntry(blocksPerRegion);
+        newEntry.pc = pc;           // Record Trigger PC
+        newEntry.offset = offset;   // Record Trigger Offset
+        newEntry.footprint[offset] = true;
+        newEntry.lastAccess = curTick(); // FIXED: use curTick()
+        accumulationTable.insert({pageAddr, newEntry});
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Prediction Phase
+    // -------------------------------------------------------------------------
+
+    uint32_t setIdx = hashShortEvent(pc, offset);
+    
+    // FIXED: Type mismatch. historyTable stores objects, not pointers.
+    std::vector<PatternEntry> &set = historyTable[setIdx];
+
+    PatternEntry* bestMatch = nullptr;
+    std::vector<PatternEntry*> shortEventMatches;
+
+    // Search the set
+    for (auto &entry : set) {
+        if (!entry.valid) continue;
+
+        // Check for Long Event Match (PC + Address)
+        bool pcMatch = (entry.pc == pc);
+        bool offsetMatch = (entry.offset == offset);
+        bool addrMatch = (entry.address == pageAddr);
+
+        if (pcMatch && addrMatch && offsetMatch) {
+            // Exact Long Event Match (Highest Accuracy)
+            bestMatch = &entry;
+            break; // Found best, stop.
+        }
+
+        if (pcMatch && offsetMatch) {
+            // Short Event Match
+            shortEventMatches.push_back(&entry);
         }
     }
 
-    // Update rolling event stream
-    updateEventTable(pc, region, offset);
+    std::vector<bool> finalFootprint(blocksPerRegion, false);
+    bool foundPrediction = false;
 
-    // Attempt match
-    auto &eh = eventTable[pc];
-    PatternEntry *pe = matchPattern(eh.history);
-    if (!pe)
-        return;
+    if (bestMatch) {
+        // If match found with Long Event, use it.
+        finalFootprint = bestMatch->footprint;
+        bestMatch->lastUse = curTick(); // FIXED: use curTick()
+        foundPrediction = true;
+    } else if (!shortEventMatches.empty()) {
+        // If no Long match, use voting on Short matches.
+        int threshold = (shortEventMatches.size() * 20) / 100;
+        if (threshold == 0) threshold = 1;
 
-    // Generate spatial prefetches starting at predicted nextOffset
-    for (unsigned i = 0; i < degree; ++i) {
-        const int target = pe->nextOffset + int(i);
-        if (target < 0)
-            continue;
+        for (unsigned blk = 0; blk < blocksPerRegion; ++blk) {
+            int votes = 0;
+            for (auto *entry : shortEventMatches) {
+                if (entry->footprint[blk]) {
+                    votes++;
+                }
+            }
 
-        const Addr pf_addr = region + Addr(target * int(lineSize));
-        addresses.emplace_back(pf_addr, 0);
+            if (votes >= threshold) {
+                finalFootprint[blk] = true;
+            }
+        }
+        
+        // Update LRU for all participating entries
+        for (auto *entry : shortEventMatches) {
+            entry->lastUse = curTick(); // FIXED: use curTick()
+        }
+        foundPrediction = true;
+    }
 
-        DPRINTF(HWPrefetch, "%s: prefetch %#lx pc=%#lx\n",
-                name(), pf_addr, pc);
+    // -------------------------------------------------------------------------
+    // 3. Issue Prefetches
+    // -------------------------------------------------------------------------
+
+    if (foundPrediction) {
+        for (unsigned blk = 0; blk < blocksPerRegion; ++blk) {
+            if (finalFootprint[blk]) {
+                // Determine prefetch address relative to current page
+                Addr prefAddr = pageAddr + (blk * blkSize);
+
+                // Don't prefetch the current block (redundant)
+                if (prefAddr == addr) continue;
+
+                // Priority 0 is standard
+                addresses.push_back(AddrPriority(prefAddr, 0));
+            }
+        }
     }
 }
 

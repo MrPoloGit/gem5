@@ -79,20 +79,18 @@ parser.add_argument('--prefetcher', type=str, default='none',
                     help='Type of prefetcher to use on the L2 Cache')
 
 parser.add_argument('--degree', type=int, default=0,
-                    help='Degree of prefetching (Overwrites default if > 0). '
-                         'Note: For Bingo, this sets "prefetch_degree". '
-                         'For others, it sets "degree".')
+                    help='Degree of prefetching (Overwrites default if > 0).')
 
 # --- Specific: Bingo Prefetcher ---
 bingo_group = parser.add_argument_group('Bingo Prefetcher Options')
 bingo_group.add_argument('--bingo-region-size', type=int, default=4096,
                          help='Spatial region size in bytes (default: 4096)')
-bingo_group.add_argument('--bingo-history-len', type=int, default=64,
-                         help='Length of event history sequence (default: 64)')
-bingo_group.add_argument('--bingo-buckets', type=int, default=256,
-                         help='Number of event buckets (default: 256)')
-bingo_group.add_argument('--bingo-patterns', type=int, default=8192,
-                         help='Max pattern table entries (default: 8192)')
+bingo_group.add_argument('--bingo-acc-entries', type=str, default="64",
+                         help='Number of active regions in Accumulation Table (default: 64)')
+bingo_group.add_argument('--bingo-hist-entries', type=str, default="12288",
+                         help='Number of entries in History Table (default: 12288)')
+bingo_group.add_argument('--bingo-hist-assoc', type=int, default=16,
+                         help='Associativity of the History Table (default: 16)')
 
 # --- Specific: MLOP Prefetcher ---
 mlop_group = parser.add_argument_group('MLOP Prefetcher Options')
@@ -174,12 +172,15 @@ if args.prefetcher == 'bingo':
     prefetcher = BingoPrefetcher()
     # Apply specific Bingo args
     prefetcher.region_size = args.bingo_region_size
-    prefetcher.event_history_len = args.bingo_history_len
-    prefetcher.bucket_count = args.bingo_buckets
-    prefetcher.pattern_table_entries = args.bingo_patterns
-    # Apply degree
+    prefetcher.accumulation_table_entries = args.bingo_acc_entries
+    prefetcher.history_table_entries = args.bingo_hist_entries
+    prefetcher.history_table_assoc = args.bingo_hist_assoc
+    
+    # Note: In the correct Bingo implementation, the prefetcher usually fetches
+    # the entire footprint (bitmask). However, if the base QueuedPrefetcher
+    # 'degree' parameter is set, it limits how many of those blocks are queued.
     if args.degree > 0:
-        prefetcher.prefetch_degree = args.degree
+        prefetcher.degree = args.degree
 
 elif args.prefetcher == 'mlop':
     prefetcher = MLOPPrefetcher()
@@ -188,8 +189,6 @@ elif args.prefetcher == 'mlop':
     prefetcher.lookahead_levels = args.mlop_lookahead
     prefetcher.max_offset = args.mlop_max_offset
     prefetcher.score_threshold = args.mlop_score_threshold
-    # MLOP doesn't strictly use a 'degree' param for generation count in the standard way,
-    # but relies on lookahead_levels. 
 
 elif args.prefetcher == 'bop':
     prefetcher = BOPPrefetcher()

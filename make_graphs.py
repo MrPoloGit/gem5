@@ -7,11 +7,6 @@ M5OUT_DIR = "m5out"  # The root folder containing the prefetcher folders
 OUTPUT_DIR = "stat_graphs" # Where to save the resulting images
 
 # Map specific gem5 stat keys to readable names
-# format: 
-# 'name': Readable title for the graph
-# 'file_key': Exact string to match in stats.txt
-# 'is_ratio': If True, uses numerator/denominator fields instead of file_key
-# 'prefetch_related': If True, "none" prefetcher will be excluded from the plot
 METRICS = [
     {
         "name": "IPC",
@@ -176,6 +171,98 @@ def add_average_group(data):
     # Add to main data structure
     data['Average'] = average_data
 
+def find_baseline_key(prefetcher_keys, baseline_name="none"):
+    """Helper to find the actual dictionary key for 'none' (case insensitive)."""
+    for key in prefetcher_keys:
+        if key.lower() == baseline_name.lower():
+            return key
+    return None
+
+def plot_percent_improvement(data, target_metric="IPC", baseline_name="none"):
+    """
+    Generates a graph showing % improvement over the baseline for a specific metric.
+    """
+    if not data:
+        return
+
+    # Check output directory
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    # Sort workloads, putting Average at end
+    workload_keys = [k for k in data.keys() if k != 'Average']
+    workloads = sorted(workload_keys)
+    if 'Average' in data:
+        workloads.append('Average')
+
+    # Identify all prefetchers
+    all_prefetchers_in_data = set()
+    for w in data:
+        all_prefetchers_in_data.update(data[w].keys())
+    
+    # Find the actual key used for the baseline (e.g., "None", "none", "NONE")
+    actual_baseline_key = find_baseline_key(all_prefetchers_in_data, baseline_name)
+    
+    if not actual_baseline_key:
+        print(f"Skipping improvement plot: Baseline '{baseline_name}' not found in data.")
+        return
+
+    # Filter prefetchers: exclude the baseline itself from the bars
+    sorted_others = sorted([p for p in all_prefetchers_in_data if p != actual_baseline_key])
+
+    if not sorted_others:
+        print("Skipping improvement plot: No other prefetchers to compare against baseline.")
+        return
+
+    # Setup plot
+    x = np.arange(len(workloads))
+    width = 0.8 / len(sorted_others)
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    # Generate bars
+    for i, prefetcher in enumerate(sorted_others):
+        y_values = []
+        for workload in workloads:
+            # Get Baseline Value
+            base_val = data.get(workload, {}).get(actual_baseline_key, {}).get(target_metric, 0.0)
+            # Get Current Prefetcher Value
+            curr_val = data.get(workload, {}).get(prefetcher, {}).get(target_metric, 0.0)
+
+            # Calculate Percent Improvement: ((Current - Base) / Base) * 100
+            if base_val > 0:
+                pct_improv = ((curr_val - base_val) / base_val) * 100.0
+            else:
+                pct_improv = 0.0 # Avoid divide by zero
+            
+            y_values.append(pct_improv)
+
+        # Bar positioning
+        offset = width * i
+        centering = (width * len(sorted_others)) / 2
+        ax.bar(x + offset - centering + (width/2), y_values, width, label=prefetcher)
+
+    # Add a horizontal line at 0
+    ax.axhline(0, color='black', linewidth=0.8)
+
+    # Formatting
+    ax.set_xlabel('Workloads')
+    ax.set_ylabel(f'% Improvement over {actual_baseline_key}')
+    ax.set_title(f'{target_metric} Percent Improvement over {actual_baseline_key} (Higher is Better)')
+    ax.set_xticks(x)
+    ax.set_xticklabels(workloads)
+    
+    # Legend
+    ax.legend(title="Prefetchers", bbox_to_anchor=(1.01, 1), loc='upper left')
+    
+    plt.tight_layout()
+    
+    # Save
+    filename = f"{target_metric.lower()}_percent_improvement.png"
+    save_path = os.path.join(OUTPUT_DIR, filename)
+    plt.savefig(save_path, dpi=300)
+    print(f"Generated graph: {save_path}")
+    plt.close()
+
 def plot_data(data):
     if not data:
         return
@@ -256,5 +343,12 @@ if __name__ == "__main__":
     if processed_data:
         print(f"Found {len(processed_data)} workloads. Calculating geometric means...")
         add_average_group(processed_data)
+        
+        # Plot standard absolute values
         plot_data(processed_data)
+        
+        # Plot Percent Improvement for IPC
+        print("Generating improvement graph...")
+        plot_percent_improvement(processed_data, target_metric="IPC", baseline_name="none")
+        
         print("Done!")

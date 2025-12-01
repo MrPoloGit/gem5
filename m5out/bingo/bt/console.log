@@ -6,15 +6,15 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7003
+system.remote_gdb: Listening for connections on port 7004
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
-gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 17:35:10
-gem5 executing on mohound-MS-7C56, pid 135824
-command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/bt configs/bingo_test/run_bench.py --prefetcher bingo NPB3.3.1/NPB3.3-SER/bin/bt.S.x
+gem5 compiled Nov 30 2025 21:55:51
+gem5 started Nov 30 2025 22:00:56
+gem5 executing on mohound-MS-7C56, pid 294545
+command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/bt configs/bingo_test/run_bench.py --prefetcher bingo --bingo-region-size 4096 --bingo-acc-entries 64 --bingo-hist-entries 12288 --bingo-hist-assoc 16 NPB3.3.1/NPB3.3-SER/bin/bt.S.x
 
 --- Info: Instantiating system ---
     Binary: NPB3.3.1/NPB3.3-SER/bin/bt.S.x
@@ -64,8 +64,8 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
  Class           =                        S
  Size            =             12x  12x  12
  Iterations      =                       60
- Time in seconds =                     2.20
- Mop/s total     =                   103.90
+ Time in seconds =                     2.19
+ Mop/s total     =                   104.39
  Operation type  =           floating point
  Verification    =               SUCCESSFUL
  Version         =                    3.3.1
@@ -87,4 +87,4 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
  npb@nas.nasa.gov
 
 
-Exiting @ tick 2269641251000 because exiting with last active thread context
+Exiting @ tick 2259209633000 because exiting with last active thread context
