@@ -1,0 +1,47 @@
+warn: Base 10 memory/cache size 16kB will be cast to base 2 size 16KiB.
+warn: Base 10 memory/cache size 64kB will be cast to base 2 size 64KiB.
+warn: Base 10 memory/cache size 256kB will be cast to base 2 size 256KiB.
+warn: Base 10 memory/cache size 512MB will be cast to base 2 size 512MiB.
+Global frequency set at 1000000000000 ticks per second
+src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+system.remote_gdb: Listening for connections on port 7001
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 25.0.0.1
+gem5 compiled Nov 30 2025 22:51:47
+gem5 started Nov 30 2025 23:22:51
+gem5 executing on Bumm-PC, pid 16202
+command line: ./build/X86/gem5.opt --outdir=m5out_parsec/stride/streamcluster configs/bingo_test/run_bench.py --prefetcher stride /home/etchao/parsec-benchmark/pkgs/kernels/streamcluster/inst/amd64-linux.gcc-pthreads/bin/streamcluster
+
+--- Info: Instantiating system ---
+    Binary: /home/etchao/parsec-benchmark/pkgs/kernels/streamcluster/inst/amd64-linux.gcc-pthreads/bin/streamcluster
+    Prefetcher: stride
+--- Start Simulation ---
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall set_robust_list(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall rseq(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+PARSEC Benchmark Suite Version 3.0-beta-20150206
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+usage: /home/etchao/parsec-benchmark/pkgs/kernels/streamcluster/inst/amd64-linux.gcc-pthreads/bin/streamcluster k1 k2 d n chunksize clustersize infile outfile nproc
+  k1:          Min. number of centers allowed
+  k2:          Max. number of centers allowed
+  d:           Dimension of each data point
+  n:           Number of data points
+  chunksize:   Number of data points to handle per step
+  clustersize: Maximum number of intermediate centers
+  infile:      Input file (if n<=0)
+  outfile:     Output file
+  nproc:       Number of threads to use
+
+if n > 0, points will be randomly generated instead of reading from infile.
+Exiting @ tick 8493853000 because exiting with last active thread context
