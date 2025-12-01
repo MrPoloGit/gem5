@@ -87,12 +87,12 @@ parser.add_argument('--degree', type=int, default=0,
 bingo_group = parser.add_argument_group('Bingo Prefetcher Options')
 bingo_group.add_argument('--bingo-region-size', type=int, default=4096,
                          help='Spatial region size in bytes (default: 4096)')
-bingo_group.add_argument('--bingo-history-len', type=int, default=8,
-                         help='Length of event history sequence (default: 8)')
-bingo_group.add_argument('--bingo-buckets', type=int, default=16,
-                         help='Number of event buckets (default: 16)')
-bingo_group.add_argument('--bingo-patterns', type=int, default=512,
-                         help='Max pattern table entries (default: 512)')
+bingo_group.add_argument('--bingo-history-len', type=int, default=64,
+                         help='Length of event history sequence (default: 64)')
+bingo_group.add_argument('--bingo-buckets', type=int, default=256,
+                         help='Number of event buckets (default: 256)')
+bingo_group.add_argument('--bingo-patterns', type=int, default=8192,
+                         help='Max pattern table entries (default: 8192)')
 
 # --- Specific: MLOP Prefetcher ---
 mlop_group = parser.add_argument_group('MLOP Prefetcher Options')
@@ -113,8 +113,8 @@ bop_group.add_argument('--bop-score-max', type=int, default=31,
                        help='Max score to update best offset (default: 31)')
 bop_group.add_argument('--bop-round-max', type=int, default=100,
                        help='Max round to update best offset (default: 100)')
-bop_group.add_argument('--bop-bad-score', type=int, default=10,
-                       help='Score at which HWP is disabled (default: 10)')
+bop_group.add_argument('--bop-bad-score', type=int, default=1,
+                       help='Score at which HWP is disabled (default: 1)')
 
 # --- Specific: Stride Prefetcher ---
 stride_group = parser.add_argument_group('Stride Prefetcher Options')
