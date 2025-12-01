@@ -729,17 +729,17 @@
                 "queue_size": 32,
                 "queue_squash": true,
                 "sys": "system",
-                "table_assoc": 4,
-                "table_entries": 64,
+                "table_assoc": 16,
+                "table_entries": 512,
                 "table_indexing_policy": {
                     "type": "StridePrefetcherHashedSetAssociative",
                     "cxx_class": "gem5::prefetch::StridePrefetcherHashedSetAssociative",
                     "name": "table_indexing_policy",
                     "path": "system.l2cache.prefetcher.table_indexing_policy",
-                    "assoc": 4,
+                    "assoc": 16,
                     "entry_size": 1,
                     "eventq_index": 0,
-                    "size": 64
+                    "size": 512
                 },
                 "table_replacement_policy": {
                     "type": "RandomRP",

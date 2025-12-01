@@ -6,14 +6,14 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7003
+system.remote_gdb: Listening for connections on port 7005
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
 gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 15:57:31
-gem5 executing on mohound-MS-7C56, pid 81937
+gem5 started Nov 30 2025 17:35:10
+gem5 executing on mohound-MS-7C56, pid 135826
 command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/dc configs/bingo_test/run_bench.py --prefetcher bingo NPB3.3.1/NPB3.3-SER/bin/dc.S.x
 
 --- Info: Instantiating system ---
@@ -57,7 +57,7 @@ Estimated rb-tree size = 75000
  Number of Views  =                   31
  Number of Tasks  =                    1
  Tuples Generated =                29232
- Tuples/s         =            271948.35
+ Tuples/s         =            271945.82
  Checksum         =   4.646202130000e+08
 
 
@@ -87,4 +87,4 @@ Estimated rb-tree size = 75000
  npb@nas.nasa.gov
 
 
-Exiting @ tick 787403369000 because exiting with last active thread context
+Exiting @ tick 786926956000 because exiting with last active thread context

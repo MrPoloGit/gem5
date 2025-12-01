@@ -726,7 +726,7 @@
                 "queue_filter": true,
                 "queue_size": 32,
                 "queue_squash": true,
-                "score_threshold": 200,
+                "score_threshold": 0,
                 "sys": "system",
                 "tag_prefetch": true,
                 "throttle_control_percentage": 0,

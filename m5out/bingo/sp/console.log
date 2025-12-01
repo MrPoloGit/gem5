@@ -6,14 +6,14 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7004
+system.remote_gdb: Listening for connections on port 7006
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
 gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 15:57:31
-gem5 executing on mohound-MS-7C56, pid 81942
+gem5 started Nov 30 2025 17:35:10
+gem5 executing on mohound-MS-7C56, pid 135831
 command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/sp configs/bingo_test/run_bench.py --prefetcher bingo NPB3.3.1/NPB3.3-SER/bin/sp.S.x
 
 --- Info: Instantiating system ---
@@ -67,7 +67,7 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
  Size            =             12x  12x  12
  Iterations      =                      100
  Time in seconds =                     0.97
- Mop/s total     =                    99.19
+ Mop/s total     =                    99.26
  Operation type  =           floating point
  Verification    =               SUCCESSFUL
  Version         =                    3.3.1
@@ -89,4 +89,4 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
  npb@nas.nasa.gov
 
 
-Exiting @ tick 1015831740000 because exiting with last active thread context
+Exiting @ tick 1015108039000 because exiting with last active thread context

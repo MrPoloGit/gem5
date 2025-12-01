@@ -12,8 +12,8 @@ gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
 gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 16:24:05
-gem5 executing on mohound-MS-7C56, pid 96606
+gem5 started Nov 30 2025 17:50:25
+gem5 executing on mohound-MS-7C56, pid 143417
 command line: ./build/ALL/gem5.opt --outdir=m5out/mlop/lu configs/bingo_test/run_bench.py --prefetcher mlop NPB3.3.1/NPB3.3-SER/bin/lu.S.x
 
 --- Info: Instantiating system ---
@@ -40,54 +40,3 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
 
 src/sim/mem_state.cc:443: info: Increasing stack size by one page.
  Time step    1
- Time step   20
- Time step   40
- Time step   50
-
- Verification being performed for class S
- Accuracy setting for epsilon =  0.1000000000000E-07
- Comparison of RMS-norms of residual
-           1   0.1619634321098E-01 0.1619634321098E-01 0.8804102745159E-13
-           2   0.2197674516482E-02 0.2197674516482E-02 0.1288605775465E-12
-           3   0.1517992765339E-02 0.1517992765340E-02 0.3002640089730E-12
-           4   0.1502958443601E-02 0.1502958443599E-02 0.1237597256955E-11
-           5   0.3426407315590E-01 0.3426407315590E-01 0.1377083171983E-13
- Comparison of RMS-norms of solution error
-           1   0.6422331995796E-03 0.6422331995796E-03 0.8930446909631E-13
-           2   0.8414434204735E-04 0.8414434204735E-04 0.3784976867350E-13
-           3   0.5858826961650E-04 0.5858826961649E-04 0.3230357253651E-12
-           4   0.5847422259515E-04 0.5847422259516E-04 0.2087082164142E-12
-           5   0.1310334791411E-02 0.1310334791411E-02 0.5510642406875E-13
- Comparison of surface integral
-               0.7841892886594E+01 0.7841892886594E+01 0.1132607181129E-15
- Verification Successful
-
-
- LU Benchmark Completed.
- Class           =                        S
- Size            =             12x  12x  12
- Iterations      =                       50
- Time in seconds =                     0.81
- Mop/s total     =                   125.80
- Operation type  =           floating point
- Verification    =               SUCCESSFUL
- Version         =                    3.3.1
- Compile date    =              30 Nov 2025
-
- Compile options:
-    F77          = f77
-    FLINK        = $(F77)
-    F_LIB        = (none)
-    F_INC        = (none)
-    FFLAGS       = -O
-    FLINKFLAGS   = -O
-    RAND         = (none)
-
-
- Please send all errors/feedbacks to:
-
- NPB Development Team
- npb@nas.nasa.gov
-
-
-Exiting @ tick 860035684000 because exiting with last active thread context
