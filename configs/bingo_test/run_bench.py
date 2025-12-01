@@ -102,13 +102,13 @@ mlop_group.add_argument('--mlop-lookahead', type=int, default=16,
                         help='Number of lookahead levels (default: 16)')
 mlop_group.add_argument('--mlop-max-offset', type=int, default=32,
                         help='Maximum offset to track (default: 32)')
-mlop_group.add_argument('--mlop-score-threshold', type=int, default=200,
+mlop_group.add_argument('--mlop-score-threshold', type=int, default=0,
                         help='Score threshold for offset selection (default: 200)')
 
 # --- Specific: BOP Prefetcher ---
 bop_group = parser.add_argument_group('BOP Prefetcher Options')
-bop_group.add_argument('--bop-rr-size', type=int, default=64,
-                       help='Number of entries in RR bank (default: 64)')
+bop_group.add_argument('--bop-rr-size', type=int, default=256,
+                       help='Number of entries in RR bank (default: 256)')
 bop_group.add_argument('--bop-score-max', type=int, default=31,
                        help='Max score to update best offset (default: 31)')
 bop_group.add_argument('--bop-round-max', type=int, default=100,
@@ -122,10 +122,10 @@ stride_group.add_argument('--stride-distance', type=int, default=0,
                         help='How far ahead of the demand stream to start prefetching (default: 0)')
 stride_group.add_argument('--stride-confidence', type=int, default=50,
                         help='Prefetch generation confidence threshold percentage (default: 50)')
-stride_group.add_argument('--stride-table-entries', type=str, default="64",
-                        help='Number of entries of the PC table (default: 64)')
-stride_group.add_argument('--stride-table-assoc', type=int, default=4,
-                        help='Associativity of the PC table (default: 4)')
+stride_group.add_argument('--stride-table-entries', type=str, default="512",
+                        help='Number of entries of the PC table (default: 512)')
+stride_group.add_argument('--stride-table-assoc', type=int, default=16,
+                        help='Associativity of the PC table (default: 16)')
 
 args = parser.parse_args()
 

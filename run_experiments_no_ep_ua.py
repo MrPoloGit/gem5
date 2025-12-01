@@ -7,7 +7,7 @@ gem5_exec = "./build/ALL/gem5.opt"
 script_path = "configs/bingo_test/run_bench.py"
 binary_base_path = "NPB3.3.1/NPB3.3-SER/bin"
 
-prefetchers = ["bingo", "stride", "mlop"]
+prefetchers = ["bingo", "stride", "mlop", "bop"]
 workloads = ["bt", "cg", "dc", "ft", "is", "lu", "mg", "sp"]
 
 def run_batch():
