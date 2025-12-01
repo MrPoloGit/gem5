@@ -1,3 +1,8 @@
+/**
+ * https://mshakerinava.github.io/papers/mlop-dpc3.pdf
+ * Describes the Multi Level Offset prefetcher based on ISCA 2019 paper.
+ */
+
 #include "mem/cache/prefetch/mlop.hh"
 
 #include "base/logging.hh"
@@ -139,7 +144,6 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
     const Addr block = addr >> lBlkSize;
 
     // Record this access as part of the stream for this PC.
-    // (Use Python knobs to ensure this is only called on misses if desired.)
     pcMissHistory[pc].push_back(block);
     missCounter++;
 

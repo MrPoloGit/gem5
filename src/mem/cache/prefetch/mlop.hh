@@ -1,3 +1,8 @@
+/**
+ * https://mshakerinava.github.io/papers/mlop-dpc3.pdf
+ * Describes the Multi Level Offset prefetcher based on ISCA 2019 paper.
+ */
+
 #ifndef __MEM_CACHE_PREFETCH_MLOP_HH__
 #define __MEM_CACHE_PREFETCH_MLOP_HH__
 
@@ -16,23 +21,6 @@ struct MLOPPrefetcherParams;
 namespace prefetch
 {
 
-/**
- * Multi-Lookahead Offset Prefetcher (MLOP)
- *
- * Implementation style matches classic gem5 prefetchers (e.g., BOP):
- *  - No direct probe registration from the prefetcher
- *  - Learning happens using the accesses that reach calculatePrefetch()
- *
- * Configure from Python to approximate "demand-miss-only learning":
- *  - on_miss = True
- *  - prefetch_on_access = False (or True if you want every access)
- *
- * This implementation:
- *  - Tracks per-PC block address history
- *  - Scores offset × lookahead pairs every evalPeriod updates
- *  - Selects best offset per lookahead
- *  - Issues prefetches at (offset * lookahead) blocks ahead/behind
- */
 class MLOP : public Queued
 {
   public:

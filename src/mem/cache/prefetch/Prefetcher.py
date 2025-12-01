@@ -684,23 +684,18 @@ class STeMSPrefetcher(QueuedPrefetcher):
     )
 
 
-# ADDED STUFF
+# START OF ADDED STUFF -------------------------------------------
 class BingoPrefetcher(QueuedPrefetcher):
     type = "BingoPrefetcher"
     cxx_class = "gem5::prefetch::Bingo"
     cxx_header = "mem/cache/prefetch/bingo.hh"
 
-    # Region (Page) size - 4KB is standard [cite: 327]
     region_size = Param.Unsigned(4096, "Spatial region size in bytes")
 
-    # Accumulation Table (Active Pages)
-    # The paper mentions "Auxiliary storage" [cite: 214]
     accumulation_table_entries = Param.Unsigned(
         64, "Number of active regions to track"
     )
 
-    # History Table (Stored Patterns)
-    # The paper suggests 16K entries and 16-way associativity [cite: 374, 388]
     history_table_entries = Param.Unsigned(
         16384, "Number of history table entries"
     )
@@ -722,43 +717,33 @@ class MLOPPrefetcher(QueuedPrefetcher):
     cxx_class = "gem5::prefetch::MLOP"
     cxx_header = "mem/cache/prefetch/mlop.hh"
 
-    #
-    # MLOP Prefetcher Parameters
-    # (matching the DPC3 competition configuration)
-    #
-
-    # Number of demand misses between offset evaluations
     evaluation_period = Param.Unsigned(
         500, "Number of demand misses before rescoring offsets"
     )
 
-    # Number of lookahead levels (typical values: 4, 8, 16)
     lookahead_levels = Param.Unsigned(
         16, "Number of lookahead distances evaluated"
     )
 
-    # Max absolute offset (in cache lines)
     max_offset = Param.Int(
         32, "Maximum offset in cache lines for MLOP search space"
     )
 
-    # Minimum score required for an offset/lookahead pair to be valid
     score_threshold = Param.Unsigned(
         200, "Minimum score for an offset/lookahead to be chosen"
     )
-
-    #
-    # Standard queued prefetcher behavior
-    #
 
     queue_squash = True
     queue_filter = True
     cache_snoop = True
 
-    # MLOP should be trained only on demand misses (NOT prefetches)
+    # MLOP should be trained only on demand misses and NOT prefetches
     on_miss = True
     prefetch_on_access = True
     on_inst = False
+
+
+# END OF ADDED STUFF -------------------------------------------
 
 
 class HWPProbeEventRetiredInsts(HWPProbeEvent):
