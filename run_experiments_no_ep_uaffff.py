@@ -16,7 +16,7 @@ BINGO_HIST_ASSOC = "16"
 # Limits
 MAX_CONCURRENT = 16  # <--- Change this to your desired max value
 
-prefetchers = ["bingo"]
+prefetchers = ["mlop"]
 workloads = ["bt", "cg", "dc", "ft", "is", "lu", "mg", "sp"]
 
 def run_pool():

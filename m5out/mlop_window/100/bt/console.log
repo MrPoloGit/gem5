@@ -1,0 +1,96 @@
+warn: Base 10 memory/cache size 16kB will be cast to base 2 size 16KiB.
+warn: Base 10 memory/cache size 64kB will be cast to base 2 size 64KiB.
+warn: Base 10 memory/cache size 256kB will be cast to base 2 size 256KiB.
+warn: Base 10 memory/cache size 512MB will be cast to base 2 size 512MiB.
+warn: Base 10 memory/cache size 256kB will be cast to base 2 size 256KiB.
+Global frequency set at 1000000000000 ticks per second
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+system.remote_gdb: Listening for connections on port 7041
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 25.0.0.1
+gem5 compiled Nov 30 2025 21:55:51
+gem5 started Dec  1 2025 22:07:37
+gem5 executing on mohound-MS-7C56, pid 51214
+command line: ./build/ALL/gem5.opt --outdir=m5out/mlop_window/100/bt configs/bingo_test/run_bench_solo.py --prefetcher mlop --l2-size 256kB --mem-size 512MB --mlop-eval-period 100 NPB3.3.1/NPB3.3-SER/bin/bt.S.x
+
+--- Info: Instantiating system ---
+    Binary: NPB3.3.1/NPB3.3-SER/bin/bt.S.x
+    Prefetcher: mlop
+    L2 Size: 256kB
+    Mem Size: 512MB
+    MLOP Lookahead: 16
+    MLOP Eval Period: 100
+    MLOP Score Thresh: 0
+--- Start Simulation ---
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+src/sim/syscall_emul.cc:86: warn: ignoring syscall set_robust_list(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall rseq(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
+      (further warnings will be suppressed)
+
+
+ NAS Parallel Benchmarks (NPB3.3-SER) - BT Benchmark
+
+ No input file inputbt.data. Using compiled defaults
+ Size:   12x  12x  12
+ Iterations:   60    dt:   0.010000
+
+ Time step    1
+ Time step   20
+ Time step   40
+ Time step   60
+ Verification being performed for class S
+ accuracy setting for epsilon =  0.1000000000000E-07
+ Comparison of RMS-norms of residual
+           1 0.1703428370954E+00 0.1703428370954E+00 0.7201925617357E-13
+           2 0.1297525207003E-01 0.1297525207003E-01 0.3680617304070E-12
+           3 0.3252792698948E-01 0.3252792698949E-01 0.1275660313637E-12
+           4 0.2643642127515E-01 0.2643642127517E-01 0.8077661407724E-12
+           5 0.1921178413175E+00 0.1921178413174E+00 0.1349364923488E-12
+ Comparison of RMS-norms of solution error
+           1 0.4997691334580E-03 0.4997691334581E-03 0.1963312458515E-12
+           2 0.4519566678297E-04 0.4519566678296E-04 0.2412401204172E-12
+           3 0.7397376517297E-04 0.7397376517292E-04 0.6065990734533E-12
+           4 0.7382123863238E-04 0.7382123863244E-04 0.8375181727013E-12
+           5 0.8926963098749E-03 0.8926963098749E-03 0.3485687350348E-13
+ Verification Successful
+
+
+ BT Benchmark Completed.
+ Class           =                        S
+ Size            =             12x  12x  12
+ Iterations      =                       60
+ Time in seconds =                     2.18
+ Mop/s total     =                   104.83
+ Operation type  =           floating point
+ Verification    =               SUCCESSFUL
+ Version         =                    3.3.1
+ Compile date    =              30 Nov 2025
+
+ Compile options:
+    F77          = f77
+    FLINK        = $(F77)
+    F_LIB        = (none)
+    F_INC        = (none)
+    FFLAGS       = -O
+    FLINKFLAGS   = -O
+    RAND         = (none)
+
+
+ Please send all errors/feedbacks to:
+
+ NPB Development Team
+ npb@nas.nasa.gov
+
+
+Exiting @ tick 2249130187000 because exiting with last active thread context

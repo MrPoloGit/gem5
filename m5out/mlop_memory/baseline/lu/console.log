@@ -1,0 +1,99 @@
+warn: Base 10 memory/cache size 16kB will be cast to base 2 size 16KiB.
+warn: Base 10 memory/cache size 64kB will be cast to base 2 size 64KiB.
+warn: Base 10 memory/cache size 256kB will be cast to base 2 size 256KiB.
+warn: Base 10 memory/cache size 512MB will be cast to base 2 size 512MiB.
+warn: Base 10 memory/cache size 256kB will be cast to base 2 size 256KiB.
+Global frequency set at 1000000000000 ticks per second
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+system.remote_gdb: Listening for connections on port 7036
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 25.0.0.1
+gem5 compiled Nov 30 2025 21:55:51
+gem5 started Dec  1 2025 22:29:26
+gem5 executing on mohound-MS-7C56, pid 61467
+command line: ./build/ALL/gem5.opt --outdir=m5out/mlop_memory/baseline/lu configs/bingo_test/run_bench_solo.py --prefetcher mlop --l2-size 256kB --mem-size 512MB NPB3.3.1/NPB3.3-SER/bin/lu.S.x
+
+--- Info: Instantiating system ---
+    Binary: NPB3.3.1/NPB3.3-SER/bin/lu.S.x
+    Prefetcher: mlop
+    L2 Size: 256kB
+    Mem Size: 512MB
+    MLOP Lookahead: 16
+    MLOP Eval Period: 500
+    MLOP Score Thresh: 0
+--- Start Simulation ---
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+src/sim/syscall_emul.cc:86: warn: ignoring syscall set_robust_list(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall rseq(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
+      (further warnings will be suppressed)
+
+
+ NAS Parallel Benchmarks (NPB3.3-SER) - LU Benchmark
+
+ Size:   12x  12x  12
+ Iterations:   50
+
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+ Time step    1
+ Time step   20
+ Time step   40
+ Time step   50
+
+ Verification being performed for class S
+ Accuracy setting for epsilon =  0.1000000000000E-07
+ Comparison of RMS-norms of residual
+           1   0.1619634321098E-01 0.1619634321098E-01 0.8804102745159E-13
+           2   0.2197674516482E-02 0.2197674516482E-02 0.1288605775465E-12
+           3   0.1517992765339E-02 0.1517992765340E-02 0.3002640089730E-12
+           4   0.1502958443601E-02 0.1502958443599E-02 0.1237597256955E-11
+           5   0.3426407315590E-01 0.3426407315590E-01 0.1377083171983E-13
+ Comparison of RMS-norms of solution error
+           1   0.6422331995796E-03 0.6422331995796E-03 0.8930446909631E-13
+           2   0.8414434204735E-04 0.8414434204735E-04 0.3784976867350E-13
+           3   0.5858826961650E-04 0.5858826961649E-04 0.3230357253651E-12
+           4   0.5847422259515E-04 0.5847422259516E-04 0.2087082164142E-12
+           5   0.1310334791411E-02 0.1310334791411E-02 0.5510642406875E-13
+ Comparison of surface integral
+               0.7841892886594E+01 0.7841892886594E+01 0.1132607181129E-15
+ Verification Successful
+
+
+ LU Benchmark Completed.
+ Class           =                        S
+ Size            =             12x  12x  12
+ Iterations      =                       50
+ Time in seconds =                     0.81
+ Mop/s total     =                   125.80
+ Operation type  =           floating point
+ Verification    =               SUCCESSFUL
+ Version         =                    3.3.1
+ Compile date    =              30 Nov 2025
+
+ Compile options:
+    F77          = f77
+    FLINK        = $(F77)
+    F_LIB        = (none)
+    F_INC        = (none)
+    FFLAGS       = -O
+    FLINKFLAGS   = -O
+    RAND         = (none)
+
+
+ Please send all errors/feedbacks to:
+
+ NPB Development Team
+ npb@nas.nasa.gov
+
+
+Exiting @ tick 860027924000 because exiting with last active thread context
