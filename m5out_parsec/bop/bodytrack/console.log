@@ -1,0 +1,45 @@
+warn: Base 10 memory/cache size 16kB will be cast to base 2 size 16KiB.
+warn: Base 10 memory/cache size 64kB will be cast to base 2 size 64KiB.
+warn: Base 10 memory/cache size 256kB will be cast to base 2 size 256KiB.
+warn: Base 10 memory/cache size 512MB will be cast to base 2 size 512MiB.
+Global frequency set at 1000000000000 ticks per second
+src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+system.remote_gdb: Listening for connections on port 7001
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 25.0.0.1
+gem5 compiled Nov 30 2025 22:51:47
+gem5 started Dec  1 2025 22:03:26
+gem5 executing on Bumm-PC, pid 168500
+command line: ./build/X86/gem5.opt --outdir=m5out_parsec/bop/bodytrack configs/bingo_test/run_bench.py --prefetcher bop /home/etchao/parsec-benchmark/pkgs/apps/bodytrack/inst/amd64-linux.gcc-pthreads/bin/bodytrack
+
+--- Info: Instantiating system ---
+    Binary: /home/etchao/parsec-benchmark/pkgs/apps/bodytrack/inst/amd64-linux.gcc-pthreads/bin/bodytrack
+    Prefetcher: bop
+--- Start Simulation ---
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall set_robust_list(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall rseq(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+src/sim/syscall_emul.cc:86: warn: ignoring syscall mprotect(...)
+PARSEC Benchmark Suite Version 3.0-beta-20150206
+Error : Invalid number of arguments
+Usage : Track (Dataset Path) (# of cameras) (# of frames to process)
+              (# of particles) (# of annealing layers)
+              [thread model] [# of threads] [write .bmp output (nonzero = yes)]
+
+        Thread model : 0 = Auto-select from available models
+                       1 = Intel TBB                 (unavailable)
+                       2 = Posix / Windows threads
+                       3 = OpenMP                    (unavailable)
+                       4 = Serial
+
+Exiting @ tick 8696602000 because exiting with last active thread context
