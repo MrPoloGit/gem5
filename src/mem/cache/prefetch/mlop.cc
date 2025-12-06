@@ -116,7 +116,7 @@ ctz64(uint64_t x)
 }
 
 void
-MLOP::updateScoresWithMiss(Addr block)
+MLOP::updateScoresWithAccess(Addr block)
 {
    // block = addr >> lBlkSize (cache-line index)
    const Addr base_block = block & ~Addr(RegionMask);
@@ -200,47 +200,57 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
                        std::vector<AddrPriority> &addresses,
                        const CacheAccessor &cache)
 {
-   // Paper: trained by L1-D miss streams -> trigger only on cache misses.
-   if (!pfi.isCacheMiss())
-       return;
 
-   const Addr addr = pfi.getAddr();
-   const Addr pc = pfi.hasPC() ? pfi.getPC() : 0;
+    const Addr addr = pfi.getAddr();
+    const Addr pc = pfi.hasPC() ? pfi.getPC() : 0;
 
-   const Addr block = addr >> lBlkSize;
+    const Addr block = addr >> lBlkSize;
 
-   // Train scores on this miss.
-   updateScoresWithMiss(block);
-   missCounter++;
+    updateScoresWithAccess(block);
 
-   // At the end of each evaluation period (500 misses),
-   // choose best offsets and reset epoch scores.
-   if (missCounter >= evalPeriod) {
-       selectBestOffsets();
-       resetScores();
-       missCounter = 0;
+    accessCounter++;
 
-       DPRINTF(HWPrefetch, "%s: epoch done, bestOffsets=%zu\n",
-               name(), bestOffsets.size());
-   }
+    if (accessCounter >= evalPeriod) {
+        selectBestOffsets();
+        resetScores();
+        accessCounter = 0;
+
+        DPRINTF(HWPrefetch, "%s: epoch done, bestOffsets=%zu\n",
+                name(), bestOffsets.size());
+    }
 
    if (bestOffsets.empty())
        return;
 
    // Prefetch in increasing lookahead order (timeliness prioritization).
-   for (const auto &p : bestOffsets) {
-       const unsigned L = p.first;
-       const OffsetEntry *e = p.second;
+    static constexpr unsigned MaxDegree = 4; // try 2, 4, or 8
+    unsigned issued = 0;
 
-       // already the chosen distance for that lookahead
-       const int o = e->offset;
-       const Addr pf_addr = addr + (Addr(o) << lBlkSize);
+    for (const auto &p : bestOffsets) {
+        if (issued >= MaxDegree)
+            break;
 
-       addresses.emplace_back(pf_addr, 0);
+        const unsigned L = p.first;
+        const OffsetEntry *e = p.second;
 
-       DPRINTF(HWPrefetch, "%s: prefetch %#lx pc=%#lx L=%u o=%d\n",
-               name(), pf_addr, pc, L, o);
-   }
+        const int o = e->offset;
+        const Addr pf_addr = addr + (Addr(o) << lBlkSize);
+
+        // Don't prefetch across 4KB pages (common prefetcher safety rule).
+        if ( (addr & ~Addr(0xFFF)) != (pf_addr & ~Addr(0xFFF)) )
+            continue;
+
+        addresses.emplace_back(pf_addr, 0);
+
+        // will test this
+        // L=1 highest priority (smallest number)
+        // addresses.emplace_back(pf_addr, (int)L);
+
+        issued++;
+
+        DPRINTF(HWPrefetch, "%s: prefetch %#lx pc=%#lx L=%u o=%d\n",
+                name(), pf_addr, pc, L, o);
+    }
 }
 
 } // namespace prefetch
