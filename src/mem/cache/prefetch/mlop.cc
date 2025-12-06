@@ -222,8 +222,8 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
    if (bestOffsets.empty())
        return;
 
-   // Prefetch in increasing lookahead order (timeliness prioritization).
-    static constexpr unsigned MaxDegree = 4; // try 2, 4, or 8
+   // Prefetch in increasing lookahead order
+    static constexpr unsigned MaxDegree = 4;
     unsigned issued = 0;
 
     for (const auto &p : bestOffsets) {
@@ -236,7 +236,7 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
         const int o = e->offset;
         const Addr pf_addr = addr + (Addr(o) << lBlkSize);
 
-        // Don't prefetch across 4KB pages (common prefetcher safety rule).
+        // Don't prefetch across 4KB pages
         if ( (addr & ~Addr(0xFFF)) != (pf_addr & ~Addr(0xFFF)) )
             continue;
 
