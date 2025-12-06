@@ -1,6 +1,6 @@
 /**
 * https://mshakerinava.github.io/papers/mlop-dpc3.pdf
-* Multi-Lookahead Offset Prefetching (MLOP) - paper-matching version.
+* Multi-Lookahead Offset Prefetching (MLOP)
 */
 
 #include "mem/cache/prefetch/mlop.hh"

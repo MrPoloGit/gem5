@@ -1,12 +1,12 @@
 /**
 * https://mshakerinava.github.io/papers/mlop-dpc3.pdf
-* Multi-Lookahead Offset Prefetching (MLOP) - paper-matching version.
+* Multi-Lookahead Offset Prefetching (MLOP)
 *
-* Key paper defaults:
+* Paper defaults:
 *  - AMT entries: 256
 *  - Neighborhood bit-vector: 64 lines
 *  - Lookahead levels: 16  (recent list stores last 15 indices)
-*  - Evaluation period: 500 L1-D misses
+*  - Evaluation period: 500 misses
 *
 */
 

@@ -730,7 +730,6 @@ class MLOPPrefetcher(QueuedPrefetcher):
     queue_filter = True
     cache_snoop = True
 
-    # Paper: train/trigger on demand misses (L1D miss stream)
     on_miss = True
     prefetch_on_access = False
     on_inst = False
