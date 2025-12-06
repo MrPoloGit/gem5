@@ -718,28 +718,21 @@ class MLOPPrefetcher(QueuedPrefetcher):
     cxx_header = "mem/cache/prefetch/mlop.hh"
 
     evaluation_period = Param.Unsigned(
-        500, "Number of demand misses before rescoring offsets"
+        500, "Paper: evaluation period (misses)"
     )
-
-    lookahead_levels = Param.Unsigned(
-        16, "Number of lookahead distances evaluated"
-    )
-
-    max_offset = Param.Int(
-        32, "Maximum offset in cache lines for MLOP search space"
-    )
-
+    lookahead_levels = Param.Unsigned(16, "Paper: lookahead levels")
+    max_offset = Param.Int(63, "Paper: max offset within 64-line region")
     score_threshold = Param.Unsigned(
-        200, "Minimum score for an offset/lookahead to be chosen"
+        200, "Min score to select an offset for a lookahead"
     )
 
     queue_squash = True
     queue_filter = True
     cache_snoop = True
 
-    # MLOP should be trained only on demand misses and NOT prefetches
+    # Paper: train/trigger on demand misses (L1D miss stream)
     on_miss = True
-    prefetch_on_access = True
+    prefetch_on_access = False
     on_inst = False
 
 
