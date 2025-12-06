@@ -718,20 +718,33 @@ class MLOPPrefetcher(QueuedPrefetcher):
     cxx_header = "mem/cache/prefetch/mlop.hh"
 
     evaluation_period = Param.Unsigned(
-        500, "Paper: evaluation period (misses)"
+        500, "Evaluation period (number of accesses per scoring epoch)"
     )
-    lookahead_levels = Param.Unsigned(16, "Paper: lookahead levels")
-    max_offset = Param.Int(63, "Paper: max offset within 64-line region")
+    lookahead_levels = Param.Unsigned(
+        16, "Number of lookahead levels (L=1..N)"
+    )
+    max_offset = Param.Int(
+        63, "Max signed offset in cache lines (must be < bit_vector_size)"
+    )
     score_threshold = Param.Unsigned(
         200, "Min score to select an offset for a lookahead"
+    )
+    prefetch_degree = Param.Unsigned(
+        16, "Max number of prefetches issued per access"
+    )
+    amt_entries = Param.Unsigned(
+        256, "Number of entries in the Address Map Table (AMT)"
+    )
+    bit_vector_size = Param.Unsigned(
+        64, "Neighborhood size in lines for each AMT entry (bit-vector length)"
     )
 
     queue_squash = True
     queue_filter = True
     cache_snoop = True
 
-    on_miss = True
-    prefetch_on_access = False
+    on_miss = False
+    prefetch_on_access = True
     on_inst = False
 
 
