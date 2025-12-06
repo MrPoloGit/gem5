@@ -3,7 +3,6 @@
 * Multi-Lookahead Offset Prefetching (MLOP) - paper-matching version.
 */
 
-
 #include "mem/cache/prefetch/mlop.hh"
 
 #include <algorithm>
@@ -21,14 +20,9 @@ namespace prefetch
 
 MLOP::MLOP(const MLOPPrefetcherParams &p)
    : Queued(p),
-     // Paper-fixed defaults:
      evalPeriod(PaperEvalPeriod),
      lookaheadLevels(PaperLookaheadLevels),
      maxOffset(PaperMaxOffset),
-     // Threshold is not specified as a single universal
-     // constant in the short paper;
-     // keep as a tunable gem5 param so you can match the paper's
-     // intended "qualified offsets" behavior.
      scoreThreshold(p.score_threshold),
      amt(PaperAmtEntries)
 {
@@ -73,7 +67,6 @@ MLOP::MLOP(const MLOPPrefetcherParams &p)
            offsetTable.size(), blkSize, (unsigned)amt.size(), RegionSize);
 }
 
-
 void
 MLOP::resetScores()
 {
@@ -81,7 +74,6 @@ MLOP::resetScores()
        kv.second.scores.fill(0);
    }
 }
-
 
 MLOP::AMTEntry &
 MLOP::findOrAllocAmtEntry(Addr base_block)
@@ -105,10 +97,8 @@ MLOP::findOrAllocAmtEntry(Addr base_block)
        }
    }
 
-
    const int victim = (free_i >= 0) ? free_i : lru_i;
    assert(victim >= 0);
-
 
    AMTEntry &v = amt[victim];
    v.valid = true;
@@ -119,13 +109,11 @@ MLOP::findOrAllocAmtEntry(Addr base_block)
    return v;
 }
 
-
 static inline unsigned
 ctz64(uint64_t x)
 {
    return (unsigned)__builtin_ctzll(x);
 }
-
 
 void
 MLOP::updateScoresWithMiss(Addr block)
@@ -137,12 +125,6 @@ MLOP::updateScoresWithMiss(Addr block)
 
    AMTEntry &entry = findOrAllocAmtEntry(base_block);
 
-
-   // For each lookahead level L:
-   //  - mask out last (L-1) accesses
-   //  - for each set bit j in masked:
-   //        k = idx - j
-   //        score[k][L]++
    for (unsigned L = 1; L <= lookaheadLevels; ++L) {
        uint64_t masked = entry.bv;
 
@@ -159,12 +141,10 @@ MLOP::updateScoresWithMiss(Addr block)
            const unsigned j = ctz64(bits);
            bits &= (bits - 1); // clear lowest set bit
 
-
            // signed offset in blocks (cache lines)
            const int k = int(idx) - int(j);
            if (k == 0) continue;
            if (k < -maxOffset || k > maxOffset) continue;
-
 
            auto it = offsetTable.find(k);
            if (it != offsetTable.end()) {
@@ -172,7 +152,6 @@ MLOP::updateScoresWithMiss(Addr block)
            }
        }
    }
-
 
    // Update ordered recent list (most-recent-first), max length = 15.
    if (entry.recent_len < RecentDepth) {
@@ -185,28 +164,23 @@ MLOP::updateScoresWithMiss(Addr block)
        entry.recent[0] = uint8_t(idx);
    }
 
-
    // Finally set the bit for this access (do after
    // scoring to avoid self-credit).
    entry.bv |= (1ULL << idx);
 }
-
 
 void
 MLOP::selectBestOffsets()
 {
    bestOffsets.clear();
 
-
    for (unsigned L = 1; L <= lookaheadLevels; ++L) {
        uint32_t bestScore = 0;
        const OffsetEntry *bestEntry = nullptr;
 
-
        for (auto &kv : offsetTable) {
            const OffsetEntry &e = kv.second;
            const uint32_t s = e.scores[L - 1];
-
 
            if (s >= scoreThreshold && s > bestScore) {
                bestScore = s;
@@ -214,14 +188,12 @@ MLOP::selectBestOffsets()
            }
        }
 
-
        // store best offset for this lookahead level
        if (bestEntry) {
            bestOffsets.emplace_back(L, bestEntry);
        }
    }
 }
-
 
 void
 MLOP::calculatePrefetch(const PrefetchInfo &pfi,
@@ -232,18 +204,14 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
    if (!pfi.isCacheMiss())
        return;
 
-
    const Addr addr = pfi.getAddr();
    const Addr pc = pfi.hasPC() ? pfi.getPC() : 0;
 
-
    const Addr block = addr >> lBlkSize;
-
 
    // Train scores on this miss.
    updateScoresWithMiss(block);
    missCounter++;
-
 
    // At the end of each evaluation period (500 misses),
    // choose best offsets and reset epoch scores.
@@ -252,37 +220,28 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
        resetScores();
        missCounter = 0;
 
-
        DPRINTF(HWPrefetch, "%s: epoch done, bestOffsets=%zu\n",
                name(), bestOffsets.size());
    }
 
-
    if (bestOffsets.empty())
        return;
 
-
    // Prefetch in increasing lookahead order (timeliness prioritization).
-   // IMPORTANT: paper uses "best offset for each lookahead",
-   // not (offset * L).
    for (const auto &p : bestOffsets) {
        const unsigned L = p.first;
        const OffsetEntry *e = p.second;
-
 
        // already the chosen distance for that lookahead
        const int o = e->offset;
        const Addr pf_addr = addr + (Addr(o) << lBlkSize);
 
-
        addresses.emplace_back(pf_addr, 0);
-
 
        DPRINTF(HWPrefetch, "%s: prefetch %#lx pc=%#lx L=%u o=%d\n",
                name(), pf_addr, pc, L, o);
    }
 }
-
 
 } // namespace prefetch
 } // namespace gem5
