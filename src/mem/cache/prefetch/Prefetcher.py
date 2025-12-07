@@ -723,9 +723,7 @@ class MLOPPrefetcher(QueuedPrefetcher):
     lookahead_levels = Param.Unsigned(
         16, "Number of lookahead levels (L=1..N)"
     )
-    max_offset = Param.Int(
-        63, "Max signed offset in cache lines (must be < bit_vector_size)"
-    )
+    max_offset = Param.Int(63, "Max signed offset in cache lines")
     score_threshold = Param.Unsigned(
         200, "Min score to select an offset for a lookahead"
     )
@@ -733,11 +731,9 @@ class MLOPPrefetcher(QueuedPrefetcher):
         16, "Max number of prefetches issued per access"
     )
     amt_entries = Param.Unsigned(
-        256, "Number of entries in the Address Map Table (AMT)"
+        256, "Number of entries in the Address Map Table"
     )
-    bit_vector_size = Param.Unsigned(
-        64, "Neighborhood size in lines for each AMT entry (bit-vector length)"
-    )
+    bit_vector_size = Param.Unsigned(64, "bit-vector length")
 
     queue_squash = True
     queue_filter = True

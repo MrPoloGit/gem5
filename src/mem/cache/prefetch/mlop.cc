@@ -58,7 +58,8 @@ MLOP::MLOP(const MLOPPrefetcherParams &p)
               name(), lookaheadLevels, recentDepth, bitVectorSize);
     }
 
-    // Populate offset table: [-maxOffset, +maxOffset], excluding 0.
+    // Populate offset table
+    // from -maxOffset to +maxOffset, excluding 0.
     for (int o = -maxOffset; o <= maxOffset; ++o) {
         if (o == 0)
             continue;
@@ -123,17 +124,15 @@ MLOP::findOrAllocAmtEntry(Addr base_block)
 void
 MLOP::updateScoresWithAccess(Addr block)
 {
-    // block: cache-line block address (addr >> lBlkSize)
+    // cache-line block address
     const Addr base_block = block & ~regionMask;
-    const unsigned idx = unsigned(block & regionMask); // 0..bitVectorSize-1
+    const unsigned idx = unsigned(block & regionMask);
 
     AMTEntry &entry = findOrAllocAmtEntry(base_block);
 
-    // --- Multi-lookahead scoring as described in the paper ---
-    // For each lookahead level L:
-    //   1) Start from the current bit-vector.
-    //   2) Exclude last (L-1) accesses by clearing their bits.
-    //   3) For each set bit j, offset k = idx - j gets +1 at level L.
+    // 1) Start from the current bit-vector.
+    // 2) Exclude last (L-1) accesses by clearing their bits.
+    // 3) For each set bit j, offset k = idx - j gets +1 at level L.
     for (unsigned L = 1; L <= lookaheadLevels; ++L) {
         uint64_t masked = entry.bv;
 
@@ -173,11 +172,9 @@ MLOP::updateScoresWithAccess(Addr block)
         entry.recent.clear();
     }
 
-    // Finally set the bit for this access
-    // (after scoring to avoid self-credit).
+    // Set the bit for this access
     entry.bv |= (1ULL << idx);
 }
-
 
 void
 MLOP::selectBestOffsets()
@@ -212,10 +209,9 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
     const Addr addr = pfi.getAddr();
     const Addr pc = pfi.hasPC() ? pfi.getPC() : 0;
 
-    // Work in cache-line blocks using Queued's lBlkSize.
     const Addr block = addr >> lBlkSize;
 
-    // Train on every access (algorithm text: 500 accesses per epoch).
+    // Train on every access
     updateScoresWithAccess(block);
     accessCounter++;
 
@@ -245,11 +241,10 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
         const int o = e->offset;
         const Addr pf_addr = addr + (Addr(o) << lBlkSize);
 
-        // Respect page boundaries using Base::samePage helper.
+        // Check page boundaries using
         if (!samePage(addr, pf_addr))
             continue;
 
-        // Larger priority value -> earlier issue in Queued.
         const int32_t prio = int32_t(lookaheadLevels - L); // L=1 highest
 
         addresses.emplace_back(pf_addr, prio);

@@ -52,7 +52,7 @@ class MLOP : public Queued
         uint64_t last_touch = 0; // LRU replacement
     };
 
-    // Parameters (runtime-configurable)
+    // Parameters (runtime-configurable in Prefetcher.py)
     const unsigned evalPeriod;
     const unsigned lookaheadLevels;
     const int maxOffset;
