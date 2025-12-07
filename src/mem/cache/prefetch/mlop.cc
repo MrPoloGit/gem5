@@ -245,7 +245,8 @@ MLOP::calculatePrefetch(const PrefetchInfo &pfi,
         if (!samePage(addr, pf_addr))
             continue;
 
-        const int32_t prio = int32_t(lookaheadLevels - L); // L=1 highest
+        // const int32_t prio = int32_t(lookaheadLevels - L); // L=1 highest
+        const int32_t prio = int32_t(L);
 
         addresses.emplace_back(pf_addr, prio);
         issued++;
