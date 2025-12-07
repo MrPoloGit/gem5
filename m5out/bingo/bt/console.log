@@ -6,15 +6,15 @@ Global frequency set at 1000000000000 ticks per second
 warn: No dot file generated. Please install pydot to generate the dot file and pdf.
 src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
 src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
-system.remote_gdb: Listening for connections on port 7004
+system.remote_gdb: Listening for connections on port 7012
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
-gem5 compiled Nov 30 2025 21:55:51
-gem5 started Nov 30 2025 22:00:56
-gem5 executing on mohound-MS-7C56, pid 294545
-command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/bt configs/bingo_test/run_bench.py --prefetcher bingo --bingo-region-size 4096 --bingo-acc-entries 64 --bingo-hist-entries 12288 --bingo-hist-assoc 16 NPB3.3.1/NPB3.3-SER/bin/bt.S.x
+gem5 compiled Dec  6 2025 16:31:32
+gem5 started Dec  6 2025 16:41:47
+gem5 executing on mohound-MS-7C56, pid 19174
+command line: ./build/ALL/gem5.opt --outdir=m5out/bingo/bt configs/bingo_test/run_bench_working.py --prefetcher bingo --bingo-region-size 4096 --bingo-acc-entries 64 --bingo-hist-entries 12288 --bingo-hist-assoc 16 NPB3.3.1/NPB3.3-SER/bin/bt.S.x
 
 --- Info: Instantiating system ---
     Binary: NPB3.3.1/NPB3.3-SER/bin/bt.S.x

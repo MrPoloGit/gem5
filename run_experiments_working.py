@@ -4,17 +4,27 @@ import time
 
 # Configuration
 gem5_exec = "./build/ALL/gem5.opt"
-script_path = "configs/bingo_test/run_bench.py"
+script_path = "configs/bingo_test/run_bench_working.py"
 binary_base_path = "NPB3.3.1/NPB3.3-SER/bin"
 
-# Bingo Specific Configuration
+# Limits
+MAX_CONCURRENT = 14 
+
+# --- Prefetcher Specific Constants ---
+
+# Bingo
 BINGO_REGION_SIZE = "4096"
 BINGO_ACC_ENTRIES = "64"
 BINGO_HIST_ENTRIES = "12288"
 BINGO_HIST_ASSOC = "16"
 
-# Limits
-MAX_CONCURRENT = 14  # <--- Change this to your desired max value
+# MLOP (Updated)
+MLOP_EVAL_PERIOD = "500"
+MLOP_LOOKAHEAD = "16"
+MLOP_MAX_OFFSET = "63"
+MLOP_SCORE_THRESHOLD = "200"
+MLOP_AMT_ENTRIES = "256"
+MLOP_BIT_VECTOR_SIZE = "64"
 
 prefetchers = ["bingo", "stride", "mlop", "bop"]
 workloads = ["bt", "cg", "dc"]
@@ -73,13 +83,22 @@ def run_pool():
                 "--prefetcher", next_pref,
             ]
             
-            # Add specific flags if the prefetcher is Bingo
+            # Add specific flags
             if next_pref == "bingo":
                 cmd.extend([
                     "--bingo-region-size", BINGO_REGION_SIZE,
                     "--bingo-acc-entries", BINGO_ACC_ENTRIES,
                     "--bingo-hist-entries", BINGO_HIST_ENTRIES,
                     "--bingo-hist-assoc", BINGO_HIST_ASSOC
+                ])
+            elif next_pref == "mlop":
+                cmd.extend([
+                    "--mlop-eval-period", MLOP_EVAL_PERIOD,
+                    "--mlop-lookahead", MLOP_LOOKAHEAD,
+                    "--mlop-max-offset", MLOP_MAX_OFFSET,
+                    "--mlop-score-threshold", MLOP_SCORE_THRESHOLD,
+                    "--mlop-amt-entries", MLOP_AMT_ENTRIES,
+                    "--mlop-bit-vector-size", MLOP_BIT_VECTOR_SIZE
                 ])
 
             # Append binary at the end

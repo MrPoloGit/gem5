@@ -11,10 +11,10 @@ gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 25.0.0.1
-gem5 compiled Nov 30 2025 11:12:42
-gem5 started Nov 30 2025 20:59:22
-gem5 executing on mohound-MS-7C56, pid 237505
-command line: ./build/ALL/gem5.opt --outdir=m5out/mlop/bt configs/bingo_test/run_bench.py --prefetcher mlop NPB3.3.1/NPB3.3-SER/bin/bt.S.x
+gem5 compiled Dec  6 2025 16:31:32
+gem5 started Dec  6 2025 16:41:47
+gem5 executing on mohound-MS-7C56, pid 19180
+command line: ./build/ALL/gem5.opt --outdir=m5out/mlop/bt configs/bingo_test/run_bench_working.py --prefetcher mlop --mlop-eval-period 500 --mlop-lookahead 16 --mlop-max-offset 63 --mlop-score-threshold 200 --mlop-amt-entries 256 --mlop-bit-vector-size 64 NPB3.3.1/NPB3.3-SER/bin/bt.S.x
 
 --- Info: Instantiating system ---
     Binary: NPB3.3.1/NPB3.3-SER/bin/bt.S.x
@@ -64,8 +64,8 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
  Class           =                        S
  Size            =             12x  12x  12
  Iterations      =                       60
- Time in seconds =                     2.18
- Mop/s total     =                   104.83
+ Time in seconds =                     2.19
+ Mop/s total     =                   104.40
  Operation type  =           floating point
  Verification    =               SUCCESSFUL
  Version         =                    3.3.1
@@ -87,4 +87,4 @@ src/sim/syscall_emul.cc:97: warn: ignoring syscall rt_sigaction(...)
  npb@nas.nasa.gov
 
 
-Exiting @ tick 2249159521000 because exiting with last active thread context
+Exiting @ tick 2258501968000 because exiting with last active thread context
